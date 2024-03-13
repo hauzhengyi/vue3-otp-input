@@ -9,9 +9,9 @@
 			ref="input"
 			min="0"
 			max="9"
-			maxlength="1"
+			maxlength="9"
 			pattern="[0-9]"
-			:value="model"
+			v-model="model"
 			:class="[inputClasses, conditionalClass, { 'is-complete': model }]"
 			@input="handleOnChange"
 			@keydown="handleOnKeyDown"
@@ -79,18 +79,14 @@ export default defineComponent({
 		const model = ref(props.value || "");
 		const input = ref<HTMLInputElement | null>(null) as Ref<HTMLInputElement>;
 
-		const handleOnChange = (e: Event) => {
-			const value = (e.target as HTMLInputElement).value;
-			if (value && value.trim().length > 1) {
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
-				// This is a workaround for dealing IOS does not fire onPaste event from sms auto-populate.
-				e.clipboardData = {
-					getData: () => value.trim(),
-				};
-				return emit("on-paste", e);
+		const handleOnChange = () => {
+			model.value = model.value.toString();
+			if (model.value.length > 1) {
+				// model.value = model.value.slice(0, 1);
+				// for iOS Chrome paste event
+				return emit("on-paste", model.value);
 			}
-			return emit("on-change", value);
+			return emit("on-change", model.value);
 		};
 
 		const isCodeLetter = (charCode: number) => charCode >= 65 && charCode <= 90;
@@ -116,7 +112,11 @@ export default defineComponent({
 			}
 		};
 
-		const handleOnPaste = (event: ClipboardEvent) => emit("on-paste", event);
+		const handleOnPaste = (event: ClipboardEvent) => {
+			event.preventDefault();
+			const pastedData = event.clipboardData?.getData("text/plain");
+			emit("on-paste", pastedData);
+		};
 
 		const handleOnFocus = () => {
 			input.value.select();
