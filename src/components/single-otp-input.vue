@@ -9,7 +9,7 @@
 			ref="input"
 			min="0"
 			max="9"
-			maxlength="9"
+			:maxlength="isLastChild ? '1' : '9'"
 			pattern="[0-9]"
 			v-model="model"
 			:class="[inputClasses, conditionalClass, { 'is-complete': model }]"
